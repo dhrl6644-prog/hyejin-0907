@@ -1,0 +1,747 @@
+<title>법인카드 휴일사용 점검대장</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#1B2333;
+    --ink-soft:#566072;
+    --ink-faint:#8891A0;
+    --paper:#EDEFEF;
+    --surface:#FFFFFF;
+    --surface-2:#F4F5F6;
+    --line:#D7DBDC;
+    --line-soft:#E4E7E8;
+    --accent:#1F3A5F;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#E4EAF1;
+    --ok:#1E7A46;    --ok-bg:#E3F3E9;
+    --warn:#93610F;  --warn-bg:#FBF0DA;
+    --bad:#B23A2E;   --bad-bg:#FBE7E4;
+    --pend:#55606E;  --pend-bg:#E9EBEC;
+    --focus:#3D6FA8;
+    --shadow: 0 1px 2px rgba(27,35,51,.06), 0 6px 20px rgba(27,35,51,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#E7EAEE;
+      --ink-soft:#A7B0BC;
+      --ink-faint:#707A88;
+      --paper:#12161D;
+      --surface:#1A2028;
+      --surface-2:#212932;
+      --line:#2C3541;
+      --line-soft:#242C37;
+      --accent:#87ADDA;
+      --accent-ink:#0E1520;
+      --accent-soft:#223349;
+      --ok:#7FD7A0;   --ok-bg:#173323;
+      --warn:#E8C273; --warn-bg:#3B2E12;
+      --bad:#F2988E;  --bad-bg:#3A1C18;
+      --pend:#B7C0CC; --pend-bg:#232B34;
+      --focus:#87ADDA;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#E7EAEE;
+    --ink-soft:#A7B0BC;
+    --ink-faint:#707A88;
+    --paper:#12161D;
+    --surface:#1A2028;
+    --surface-2:#212932;
+    --line:#2C3541;
+    --line-soft:#242C37;
+    --accent:#87ADDA;
+    --accent-ink:#0E1520;
+    --accent-soft:#223349;
+    --ok:#7FD7A0;   --ok-bg:#173323;
+    --warn:#E8C273; --warn-bg:#3B2E12;
+    --bad:#F2988E;  --bad-bg:#3A1C18;
+    --pend:#B7C0CC; --pend-bg:#232B34;
+    --focus:#87ADDA;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Noto Sans KR", -apple-system, "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent-soft); }
+  :focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+  }
+
+  .page{ max-width:1180px; margin:0 auto; padding:40px 24px 80px; }
+
+  /* header */
+  .eyebrow{
+    font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 10px;
+  }
+  h1{
+    font-family:"Noto Serif KR", serif; font-weight:700;
+    font-size:clamp(26px,3.4vw,34px); line-height:1.25; margin:0 0 10px; text-wrap:balance;
+  }
+  .lede{
+    color:var(--ink-soft); font-size:15px; line-height:1.7; max-width:640px; margin:0 0 6px;
+  }
+  .basis{
+    color:var(--ink-faint); font-size:12.5px; line-height:1.6; margin-top:10px;
+  }
+  header{
+    border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:28px;
+  }
+
+  /* stats */
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(148px,1fr));
+    gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; margin-bottom:28px; box-shadow:var(--shadow);
+  }
+  .stat{ background:var(--surface); padding:16px 18px; }
+  .stat-label{ font-size:11.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+  .stat-value{ font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:22px; font-variant-numeric:tabular-nums; }
+  .stat-value.ok{ color:var(--ok); } .stat-value.warn{ color:var(--warn); }
+  .stat-value.bad{ color:var(--bad); } .stat-value.pend{ color:var(--pend); }
+
+  section{ margin-bottom:28px; }
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    box-shadow:var(--shadow); padding:22px 24px;
+  }
+  h2{
+    font-family:"Noto Serif KR", serif; font-size:17px; font-weight:700; margin:0 0 4px;
+  }
+  .panel-hint{ color:var(--ink-soft); font-size:13px; margin:0 0 18px; }
+
+  /* form */
+  form.entry-form{ display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px 18px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.span-2{ grid-column:span 2; }
+  .field.wide{ grid-column:1 / -1; }
+  label{ font-size:12.5px; font-weight:500; color:var(--ink-soft); }
+  input, select, textarea{
+    font:inherit; font-size:14px; color:var(--ink); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:7px; padding:9px 10px; width:100%;
+  }
+  textarea{ resize:vertical; min-height:64px; font-family:"Noto Sans KR",sans-serif; }
+  input[type="number"], input[type="date"]{ font-family:"IBM Plex Mono", monospace; }
+  .date-row{ display:flex; gap:8px; align-items:center; }
+  .date-row input{ flex:1; }
+  .day-chip{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 9px; border-radius:6px;
+    white-space:nowrap; background:var(--pend-bg); color:var(--pend); border:1px solid transparent;
+  }
+  .day-chip.holiday{ background:var(--bad-bg); color:var(--bad); }
+  .day-chip.weekday-warn{ background:var(--warn-bg); color:var(--warn); }
+  .override-row{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .override-row select{ width:auto; padding:5px 8px; font-size:12.5px; }
+  .form-actions{ grid-column:1/-1; display:flex; justify-content:flex-end; gap:10px; margin-top:2px; }
+  button{ font:inherit; cursor:pointer; }
+  .btn{
+    background:var(--accent); color:var(--accent-ink); border:none; border-radius:7px;
+    padding:10px 20px; font-weight:700; font-size:14px;
+  }
+  .btn:hover{ filter:brightness(1.08); }
+  .btn.ghost{
+    background:transparent; color:var(--ink-soft); border:1px solid var(--line); font-weight:500;
+  }
+  .btn.ghost:hover{ color:var(--ink); border-color:var(--ink-faint); }
+  .btn.small{ padding:6px 12px; font-size:12.5px; }
+
+  /* sample banner */
+  .banner{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn);
+    border-radius:8px; padding:12px 16px; font-size:13px; margin-bottom:18px;
+  }
+  .banner strong{ font-weight:700; }
+
+  /* filters */
+  .filters{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:18px; }
+  .filters .field{ min-width:150px; flex:1 1 150px; }
+  .filters .field.grow{ flex:2 1 220px; }
+
+  /* table */
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow); }
+  table{ width:100%; border-collapse:collapse; min-width:980px; background:var(--surface); }
+  thead th{
+    position:sticky; top:0; background:var(--surface-2); text-align:left; font-size:11.5px;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); font-weight:700;
+    padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  tbody td{
+    padding:12px; border-bottom:1px solid var(--line-soft); font-size:13.5px; vertical-align:top;
+  }
+  tbody tr:nth-child(even){ background:var(--surface-2); }
+  tbody tr.is-sample td:first-child{ box-shadow:inset 3px 0 0 var(--warn); }
+  .date-cell .d{ font-family:"IBM Plex Mono", monospace; font-weight:600; }
+  .date-cell .w{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .date-cell .w.holiday{ color:var(--bad); }
+  .who .dept{ color:var(--ink-soft); font-size:12px; }
+  .who .name{ font-weight:500; }
+  .who .card{ font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--ink-faint); }
+  .merchant .m{ font-weight:500; }
+  .merchant .p{ font-size:12px; color:var(--ink-soft); }
+  .amount{ font-family:"IBM Plex Mono", monospace; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .reason{ max-width:240px; color:var(--ink-soft); font-size:12.5px; line-height:1.5; }
+  .status-select{
+    font-weight:700; font-size:12.5px; border-radius:999px; border:1px solid transparent;
+    padding:6px 10px; appearance:none; -webkit-appearance:none; background-position:right 8px center;
+    cursor:pointer;
+  }
+  .status-select.st-pend{ background-color:var(--pend-bg); color:var(--pend); }
+  .status-select.st-warn{ background-color:var(--warn-bg); color:var(--warn); }
+  .status-select.st-ok{ background-color:var(--ok-bg); color:var(--ok); }
+  .status-select.st-bad{ background-color:var(--bad-bg); color:var(--bad); }
+  .note-input{ font-size:12.5px; padding:6px 8px; background:var(--surface-2); min-width:120px; }
+  .meta{ font-size:11.5px; color:var(--ink-faint); white-space:nowrap; }
+  .del-btn{
+    background:transparent; border:none; color:var(--ink-faint); font-size:16px; line-height:1;
+    padding:4px 6px; border-radius:6px;
+  }
+  .del-btn:hover{ color:var(--bad); background:var(--bad-bg); }
+  .empty-state{ padding:48px 24px; text-align:center; color:var(--ink-soft); font-size:14px; }
+  .empty-state .big{ font-family:"Noto Serif KR",serif; font-size:17px; color:var(--ink); margin-bottom:6px; }
+  footer{ text-align:center; color:var(--ink-faint); font-size:12px; margin-top:32px; }
+</style>
+
+<div class="page">
+
+  <header>
+    <p class="eyebrow">내부통제 · 법인카드 점검</p>
+    <h1>법인카드 휴일사용 점검대장</h1>
+    <p class="lede">주말·공휴일에 발생한 법인카드 사용 건을 등록하고, 소명 확인부터 최종 처리까지의 점검 상태를 팀과 함께 기록합니다.</p>
+    <p class="basis" id="dbStatusLine">저장소 연결 확인 중…</p>
+  </header>
+
+  <section>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div id="sampleBanner" class="banner" style="display:none;">
+    <span><strong>예시 데이터 포함</strong> — 아래 목록에 표시된 항목은 사용법을 보여주기 위한 예시입니다. 실제 점검을 시작하기 전에 삭제하세요.</span>
+    <button class="btn ghost small" id="clearSampleBtn" type="button">예시 데이터 삭제</button>
+  </div>
+
+  <section>
+    <div class="panel">
+      <h2>휴일 사용 건 등록</h2>
+      <p class="panel-hint">거래 1건당 하나씩 등록합니다. 날짜를 입력하면 요일·공휴일 여부가 자동으로 표시됩니다.</p>
+      <form class="entry-form" id="entryForm">
+        <div class="field">
+          <label for="f-date">사용일자 *</label>
+          <div class="date-row">
+            <input type="date" id="f-date" required>
+            <span class="day-chip" id="dayChip">날짜 선택</span>
+          </div>
+          <div class="override-row">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;">
+              <input type="checkbox" id="f-override" style="width:auto;">
+              공휴일 자동판정과 다름 (직접 지정)
+            </label>
+            <select id="f-override-value" style="display:none;">
+              <option value="holiday">휴일로 처리</option>
+              <option value="weekday">평일로 처리</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-dept">부서 *</label>
+          <input id="f-dept" required placeholder="예: 영업1팀">
+        </div>
+
+        <div class="field">
+          <label for="f-holder">카드 사용자 *</label>
+          <input id="f-holder" required placeholder="예: 김성실 과장">
+        </div>
+
+        <div class="field">
+          <label for="f-card">카드번호 뒤 4자리</label>
+          <input id="f-card" maxlength="4" inputmode="numeric" placeholder="1234">
+        </div>
+
+        <div class="field span-2">
+          <label for="f-merchant">가맹점명 *</label>
+          <input id="f-merchant" required placeholder="예: OO호텔 판교점">
+        </div>
+
+        <div class="field">
+          <label for="f-purpose">사용목적 구분 *</label>
+          <select id="f-purpose" required>
+            <option value="">선택</option>
+            <option>업무추진비</option>
+            <option>거래처 접대</option>
+            <option>초과근무·야근식대</option>
+            <option>출장</option>
+            <option>회의비</option>
+            <option>기타</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-amount">사용금액(원) *</label>
+          <input type="number" id="f-amount" required min="0" step="100" placeholder="0">
+        </div>
+
+        <div class="field wide">
+          <label for="f-reason">사용 사유 및 소명 내용</label>
+          <textarea id="f-reason" placeholder="예: 지방 출장 중 숙박 — 출장품의서 사전 결재완료(기안번호 2026-0912)"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="f-reviewer">점검자 *</label>
+          <input id="f-reviewer" required placeholder="예: 이감사 대리">
+        </div>
+
+        <div class="form-actions">
+          <button type="reset" class="btn ghost">비우기</button>
+          <button type="submit" class="btn">등록</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section>
+    <div class="filters">
+      <div class="field grow">
+        <label for="q-search">통합검색</label>
+        <input id="q-search" placeholder="부서 · 사용자 · 가맹점">
+      </div>
+      <div class="field">
+        <label for="q-status">점검결과</label>
+        <select id="q-status">
+          <option value="">전체</option>
+          <option>미확인</option>
+          <option>소명요청</option>
+          <option>정상</option>
+          <option>부적정</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="q-from">사용일자 시작</label>
+        <input type="date" id="q-from">
+      </div>
+      <div class="field">
+        <label for="q-to">사용일자 종료</label>
+        <input type="date" id="q-to">
+      </div>
+      <button class="btn ghost small" id="resetFilters" type="button" style="margin-bottom:1px;">필터 초기화</button>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>사용일자</th>
+            <th>부서 / 사용자</th>
+            <th>가맹점 / 목적</th>
+            <th style="text-align:right;">금액</th>
+            <th>사유 · 소명</th>
+            <th>점검결과</th>
+            <th>비고</th>
+            <th>점검자 / 등록</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="9"><div class="empty-state">불러오는 중…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>공휴일 판정은 대한민국 2025–2026년 공휴일(임시공휴일 일부 포함) 기준의 참고용 표입니다. 정부 발표와 다를 경우 등록 시 "직접 지정"으로 보정하세요.</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var KR_HOLIDAYS = {
+    "2025-01-01":"신정",
+    "2025-01-27":"임시공휴일",
+    "2025-01-28":"설날 연휴",
+    "2025-01-29":"설날",
+    "2025-01-30":"설날 연휴",
+    "2025-03-01":"삼일절",
+    "2025-03-03":"삼일절 대체공휴일",
+    "2025-05-05":"어린이날·부처님오신날",
+    "2025-05-06":"대체공휴일",
+    "2025-06-06":"현충일",
+    "2025-08-15":"광복절",
+    "2025-10-03":"개천절",
+    "2025-10-05":"추석 연휴",
+    "2025-10-06":"추석",
+    "2025-10-07":"추석 연휴",
+    "2025-10-08":"추석 대체공휴일",
+    "2025-10-09":"한글날",
+    "2025-12-25":"성탄절",
+    "2026-01-01":"신정",
+    "2026-02-16":"설날 연휴",
+    "2026-02-17":"설날",
+    "2026-02-18":"설날 연휴",
+    "2026-03-01":"삼일절",
+    "2026-03-02":"삼일절 대체공휴일",
+    "2026-05-05":"어린이날",
+    "2026-05-24":"부처님오신날",
+    "2026-05-25":"대체공휴일",
+    "2026-06-06":"현충일",
+    "2026-08-15":"광복절",
+    "2026-08-17":"광복절 대체공휴일",
+    "2026-09-24":"추석 연휴",
+    "2026-09-25":"추석",
+    "2026-09-26":"추석 연휴",
+    "2026-10-03":"개천절",
+    "2026-10-05":"개천절 대체공휴일",
+    "2026-10-09":"한글날",
+    "2026-12-25":"성탄절"
+  };
+  var WEEKDAY_NAMES = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"];
+  var STATUS_LIST = ["미확인","소명요청","정상","부적정"];
+  var STATUS_CLASS = {"미확인":"st-pend","소명요청":"st-warn","정상":"st-ok","부적정":"st-bad"};
+  var LOCAL_KEY = "cc-holiday-audit-entries-v1";
+  var REVIEWER_KEY = "cc-holiday-audit-reviewer";
+
+  function getDayInfo(dateStr){
+    if(!dateStr) return null;
+    var d = new Date(dateStr + "T00:00:00");
+    if(isNaN(d.getTime())) return null;
+    var dow = d.getDay();
+    var weekdayLabel = WEEKDAY_NAMES[dow];
+    var isWeekend = dow === 0 || dow === 6;
+    var holidayName = KR_HOLIDAYS[dateStr] || null;
+    return {
+      weekdayLabel: weekdayLabel,
+      isWeekend: isWeekend,
+      holidayName: holidayName,
+      isHoliday: isWeekend || !!holidayName,
+      label: holidayName ? (weekdayLabel + " · " + holidayName) : weekdayLabel
+    };
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function formatWon(n){
+    n = Number(n) || 0;
+    return n.toLocaleString("ko-KR") + "원";
+  }
+  function formatDateTime(iso){
+    if(!iso) return "";
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return "";
+    var p = function(n){ return String(n).padStart(2,"0"); };
+    return (d.getFullYear()) + "." + p(d.getMonth()+1) + "." + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+
+  // ---- state ----
+  var db = null;
+  var dbAvailable = false;
+  var allEntries = [];
+
+  function saveLocal(){
+    try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(allEntries)); }catch(e){}
+  }
+  function loadLocal(){
+    try{
+      var raw = localStorage.getItem(LOCAL_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+
+  async function addEntry(data){
+    var now = new Date().toISOString();
+    data.createdAt = now;
+    data.updatedAt = now;
+    if(dbAvailable){
+      await db.collection("entries").add(data);
+    } else {
+      data.id = "local-" + Date.now() + "-" + Math.random().toString(36).slice(2,8);
+      allEntries.unshift(data);
+      saveLocal();
+      render();
+    }
+  }
+  async function updateEntry(id, patch){
+    patch.updatedAt = new Date().toISOString();
+    if(dbAvailable){
+      await db.doc("entries/" + id).update(patch);
+    } else {
+      var e = allEntries.find(function(x){ return x.id === id; });
+      if(e) Object.assign(e, patch);
+      saveLocal();
+      render();
+    }
+  }
+  async function deleteEntry(id){
+    if(!confirm("이 점검 항목을 삭제하시겠습니까?")) return;
+    if(dbAvailable){
+      await db.doc("entries/" + id).delete();
+    } else {
+      allEntries = allEntries.filter(function(x){ return x.id !== id; });
+      saveLocal();
+      render();
+    }
+  }
+  async function clearSamples(){
+    if(!confirm("예시 데이터를 모두 삭제하시겠습니까?")) return;
+    var samples = allEntries.filter(function(e){ return e.isSample; });
+    if(dbAvailable){
+      for(var i=0;i<samples.length;i++){ await db.doc("entries/" + samples[i].id).delete(); }
+    } else {
+      allEntries = allEntries.filter(function(e){ return !e.isSample; });
+      saveLocal();
+      render();
+    }
+  }
+
+  // ---- form: day chip ----
+  var dateInput = document.getElementById("f-date");
+  var dayChip = document.getElementById("dayChip");
+  var overrideCheck = document.getElementById("f-override");
+  var overrideValue = document.getElementById("f-override-value");
+
+  function refreshDayChip(){
+    var info = getDayInfo(dateInput.value);
+    if(!info){
+      dayChip.textContent = "날짜 선택";
+      dayChip.className = "day-chip";
+      return;
+    }
+    if(overrideCheck.checked){
+      var forced = overrideValue.value;
+      if(forced === "holiday"){
+        dayChip.textContent = info.weekdayLabel + " · 직접 지정(휴일)";
+        dayChip.className = "day-chip holiday";
+      } else {
+        dayChip.textContent = info.weekdayLabel + " · 직접 지정(평일)";
+        dayChip.className = "day-chip weekday-warn";
+      }
+      return;
+    }
+    if(info.isHoliday){
+      dayChip.textContent = info.label;
+      dayChip.className = "day-chip holiday";
+    } else {
+      dayChip.textContent = info.weekdayLabel + " · 평일 (점검 대상 아님)";
+      dayChip.className = "day-chip weekday-warn";
+    }
+  }
+  dateInput.addEventListener("input", refreshDayChip);
+  overrideCheck.addEventListener("change", function(){
+    overrideValue.style.display = overrideCheck.checked ? "inline-block" : "none";
+    refreshDayChip();
+  });
+  overrideValue.addEventListener("change", refreshDayChip);
+
+  // reviewer name memory (per-device convenience only)
+  var reviewerInput = document.getElementById("f-reviewer");
+  try{
+    var savedReviewer = localStorage.getItem(REVIEWER_KEY);
+    if(savedReviewer) reviewerInput.value = savedReviewer;
+  }catch(e){}
+
+  document.getElementById("entryForm").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var info = getDayInfo(dateInput.value);
+    var isHoliday = info ? info.isHoliday : false;
+    var dayLabel = info ? info.label : "";
+    var holidayOverride = false;
+    if(overrideCheck.checked && info){
+      holidayOverride = true;
+      isHoliday = overrideValue.value === "holiday";
+      dayLabel = info.weekdayLabel + (isHoliday ? " · 직접 지정(휴일)" : " · 직접 지정(평일)");
+    }
+    var reviewer = reviewerInput.value.trim();
+    try{ localStorage.setItem(REVIEWER_KEY, reviewer); }catch(e){}
+
+    addEntry({
+      txnDate: dateInput.value,
+      dayLabel: dayLabel,
+      isHoliday: isHoliday,
+      holidayOverride: holidayOverride,
+      dept: document.getElementById("f-dept").value.trim(),
+      holder: document.getElementById("f-holder").value.trim(),
+      cardLast4: document.getElementById("f-card").value.trim(),
+      merchant: document.getElementById("f-merchant").value.trim(),
+      purpose: document.getElementById("f-purpose").value,
+      amount: Number(document.getElementById("f-amount").value) || 0,
+      reason: document.getElementById("f-reason").value.trim(),
+      reviewer: reviewer,
+      status: "미확인",
+      note: "",
+      isSample: false
+    });
+
+    ev.target.reset();
+    reviewerInput.value = reviewer;
+    refreshDayChip();
+  });
+
+  // ---- filters ----
+  var qSearch = document.getElementById("q-search");
+  var qStatus = document.getElementById("q-status");
+  var qFrom = document.getElementById("q-from");
+  var qTo = document.getElementById("q-to");
+  [qSearch, qStatus, qFrom, qTo].forEach(function(el){
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+  document.getElementById("resetFilters").addEventListener("click", function(){
+    qSearch.value = ""; qStatus.value = ""; qFrom.value = ""; qTo.value = "";
+    render();
+  });
+
+  function getFiltered(){
+    var term = qSearch.value.trim().toLowerCase();
+    var status = qStatus.value;
+    var from = qFrom.value;
+    var to = qTo.value;
+    return allEntries.filter(function(e){
+      if(status && e.status !== status) return false;
+      if(from && e.txnDate < from) return false;
+      if(to && e.txnDate > to) return false;
+      if(term){
+        var hay = [e.dept, e.holder, e.merchant].join(" ").toLowerCase();
+        if(hay.indexOf(term) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  // ---- render ----
+  var tbody = document.getElementById("tbody");
+  var statsEl = document.getElementById("stats");
+  var bannerEl = document.getElementById("sampleBanner");
+
+  function render(){
+    var list = getFiltered().slice().sort(function(a,b){
+      return (b.txnDate || "").localeCompare(a.txnDate || "");
+    });
+
+    // stats (reflect current filter)
+    var counts = {"미확인":0,"소명요청":0,"정상":0,"부적정":0};
+    var total = 0;
+    list.forEach(function(e){
+      counts[e.status] = (counts[e.status]||0) + 1;
+      total += Number(e.amount) || 0;
+    });
+    statsEl.innerHTML =
+      stat("점검 건수", list.length, "") +
+      stat("미확인", counts["미확인"], "pend") +
+      stat("소명요청", counts["소명요청"], "warn") +
+      stat("정상 처리", counts["정상"], "ok") +
+      stat("부적정", counts["부적정"], "bad") +
+      stat("합계 금액", formatWon(total), "", true);
+
+    bannerEl.style.display = allEntries.some(function(e){ return e.isSample; }) ? "flex" : "none";
+
+    if(list.length === 0){
+      tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">' +
+        '<div class="big">등록된 점검 항목이 없습니다</div>' +
+        '위 양식에서 휴일 사용 건을 등록하면 여기에 표시됩니다.' +
+        '</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(rowHtml).join("");
+
+    // wire up interactive cells
+    tbody.querySelectorAll("select.status-select").forEach(function(sel){
+      sel.addEventListener("change", function(){
+        var id = sel.getAttribute("data-id");
+        var val = sel.value;
+        sel.className = "status-select " + STATUS_CLASS[val];
+        updateEntry(id, { status: val });
+      });
+    });
+    tbody.querySelectorAll("input.note-input").forEach(function(inp){
+      inp.addEventListener("change", function(){
+        updateEntry(inp.getAttribute("data-id"), { note: inp.value.trim() });
+      });
+    });
+    tbody.querySelectorAll(".del-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        deleteEntry(btn.getAttribute("data-id"));
+      });
+    });
+  }
+
+  function stat(label, value, tone, isText){
+    return '<div class="stat"><div class="stat-label">' + escapeHtml(label) + '</div>' +
+      '<div class="stat-value' + (tone ? (" " + tone) : "") + '" style="' + (isText ? "font-size:18px;" : "") + '">' +
+      escapeHtml(value) + '</div></div>';
+  }
+
+  function rowHtml(e){
+    var holidayClass = e.isHoliday ? "holiday" : "";
+    return '<tr class="' + (e.isSample ? "is-sample" : "") + '">' +
+      '<td class="date-cell"><div class="d">' + escapeHtml(e.txnDate) + '</div>' +
+        '<div class="w ' + holidayClass + '">' + escapeHtml(e.dayLabel || "") + '</div></td>' +
+      '<td class="who"><div class="name">' + escapeHtml(e.holder) + '</div>' +
+        '<div class="dept">' + escapeHtml(e.dept) + '</div>' +
+        (e.cardLast4 ? '<div class="card">****-' + escapeHtml(e.cardLast4) + '</div>' : '') + '</td>' +
+      '<td class="merchant"><div class="m">' + escapeHtml(e.merchant) + '</div>' +
+        '<div class="p">' + escapeHtml(e.purpose || "") + '</div></td>' +
+      '<td class="amount">' + formatWon(e.amount) + '</td>' +
+      '<td class="reason">' + escapeHtml(e.reason || "—") + '</td>' +
+      '<td><select class="status-select ' + STATUS_CLASS[e.status] + '" data-id="' + e.id + '">' +
+        STATUS_LIST.map(function(s){
+          return '<option value="' + s + '"' + (s === e.status ? " selected" : "") + '>' + s + '</option>';
+        }).join("") +
+        '</select></td>' +
+      '<td><input class="note-input" data-id="' + e.id + '" value="' + escapeHtml(e.note || "") + '" placeholder="메모"></td>' +
+      '<td class="meta">' + escapeHtml(e.reviewer || "") + '<br>' + formatDateTime(e.createdAt) + '</td>' +
+      '<td><button class="del-btn" data-id="' + e.id + '" title="삭제" type="button">✕</button></td>' +
+      '</tr>';
+  }
+
+  document.getElementById("clearSampleBtn").addEventListener("click", clearSamples);
+
+  // ---- db bootstrap ----
+  var dbStatusLine = document.getElementById("dbStatusLine");
+  function setStatusLine(text){ dbStatusLine.textContent = text; }
+
+  async function init(){
+    if(!window.claude || !window.claude.use){
+      allEntries = loadLocal();
+      setStatusLine("이 화면은 공휴일 판정 참고 기준: 대한민국 2025–2026년 공휴일 · 이 브라우저에만 저장되는 로컬 모드입니다.");
+      render();
+      return;
+    }
+    try{
+      db = await window.claude.use("db");
+    }catch(e){
+      db = null;
+    }
+    if(!db){
+      allEntries = loadLocal();
+      setStatusLine("팀 공유 저장소에 연결할 수 없어 이 브라우저에만 저장되는 로컬 모드로 동작합니다.");
+      render();
+      return;
+    }
+    dbAvailable = true;
+    setStatusLine("팀 공유 저장소에 연결되어, 등록·수정 내용이 함께 보는 모든 팀원에게 실시간으로 반영됩니다.");
+    db.collection("entries").orderBy("txnDate","desc").limit(500).onSnapshot(
+      function(snap){
+        allEntries = snap.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); });
+        render();
+      },
+      function(err){
+        setStatusLine("저장소 연결 오류(" + (err && err.code || "unknown") + "). 새로고침 후 다시 시도해주세요.");
+      }
+    );
+  }
+
+  refreshDayChip();
+  render();
+  init();
+})();
+</script>
